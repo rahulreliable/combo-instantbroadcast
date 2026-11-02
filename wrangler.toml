@@ -1,0 +1,8 @@
+# Only used if this repo is deployed as a Cloudflare Worker (Workers & Pages → Create → Import a repository).
+# A Cloudflare Pages project ignores this file — set build command: none, output directory: /
+name = "combo-instantbroadcast"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./"
+not_found_handling = "404-page"
