@@ -12,15 +12,25 @@ Deploy: Cloudflare Pages (or Workers static assets) from branch `main`, build co
 - `assets/` — IB logo, client logos, customer video thumbnails, team photos, store badges (from instantbroadcast.in)
 - `_headers`, `404.html`
 
+## Razorpay setup (one time, in Cloudflare)
+Worker → Settings → Variables and Secrets → add two **Secret** variables:
+- `RAZORPAY_KEY_ID` — from Razorpay Dashboard → Account & Settings → API Keys (use `rzp_test_…` first to test)
+- `RAZORPAY_KEY_SECRET` — the matching secret
+
+Until both are set, `/api/order` answers 503 and the page shows "Payment abhi shuru nahi ho paya" with a WhatsApp fallback.
+
 ## Edit before ads go live
-1. **Add-on prices** — `CONFIG.items.ai_chatbot.price` and `CONFIG.items.ai_calling.price` (yearly ₹ before GST). While `null`, the page says "Price team confirm karegi" and leaves them out of the total.
-2. **Checkout link** — `CONFIG.checkoutUrl`. Now: IB sign-up on the yearly plan (`plan=38`) with `addons=` appended. Replace with a Razorpay payment link / cart URL when one exists for each combo.
-3. **Showroom Kit contents** — the page says "WhatsApp QR stand"; change the text if the kit has more or less.
+1. **Add-on prices** — set them in BOTH places: `CONFIG.items.*.price` in `app.js` (what the page shows) and `PRICES` in `worker.js` (what Razorpay charges). While `null`, the add-on is noted on the order but not charged.
+2. **Showroom Kit contents** — the page says "WhatsApp QR stand"; change the text if needed.
 
 ## Checkout flow
-Tick add-ons → "Checkout karo" → name + WhatsApp number (+ business, optional) → lead saved to `instantbroadcast.in/api/leads/special-offer` (source `combo_landing`, with addons, cart total, UTMs) → redirect to `CONFIG.checkoutUrl`.
+Tick add-ons → "Checkout karo" → name + WhatsApp (+ business) → lead saved (source `combo_landing`) → `POST /api/order` (Worker computes the amount, creates the Razorpay order with a unique order number `IB-YYMMDD-XXXXX` as receipt) → Razorpay Checkout → `POST /api/verify` (signature check, order read back from Razorpay, sale saved to leads API with source `combo_purchase`) → `/thank-you/?order=IB-…`.
+
+Thank-you page: order number (copy button), amount, payment ID, items; **Start onboarding** (onboarding.instantbroadcast.in/auth/facebook/onboarding/), **Book a demo** (pick day + slot, saved with source `combo_demo` and the order number), **WhatsApp** (pre-filled with the order number).
 
 ## Tracking events
-- Meta Pixel 1191549192775541: PageView, AddToCart (each tick), InitiateCheckout (drawer opens), Lead (form submit, + same Lead via `instantbroadcast.in/api/tracking/meta-capi` with the same event id), Contact (WhatsApp taps)
-- dataLayer (GTM): add_to_cart, begin_checkout, generate_lead, cta_click, video_review_click, whatsapp_click
-- **Purchase** is not fired here — it has to fire on the payment success page.
+- Meta Pixel 1191549192775541: PageView, AddToCart, InitiateCheckout, Lead (+ CAPI), AddPaymentInfo, **Purchase** (thank-you page, once per verified order, eventID = order number, + CAPI), Schedule (demo booked), Contact
+- dataLayer (GTM): add_to_cart, begin_checkout, generate_lead, add_payment_info, purchase (transaction_id = order number), book_demo, start_onboarding, payment_failed, cta_click, whatsapp_click
+
+## Recommended next
+Add a Razorpay webhook (payment.captured) so a sale is recorded even if the buyer closes the browser before the thank-you page loads.

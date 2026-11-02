@@ -348,11 +348,11 @@ fbq('track', 'PageView');
   <div class="wrap">
     <div class="kit-grid">
       <div class="kit-photos">
-        <img src="/assets/team-kit.webp" alt="Instant Broadcast team handing over the kit to a client" width="640" height="480" loading="lazy">
-        <img src="/assets/team-qr-stand.webp" alt="WhatsApp QR stand on a shop counter" width="640" height="480" loading="lazy">
-        <img src="/assets/team-textile-shop.webp" alt="Instant Broadcast team at a textile shop" width="640" height="480" loading="lazy">
+        <figure><img src="/assets/team-kit.webp" alt="Instant Broadcast team handing the kit to a client" width="640" height="480" loading="lazy" decoding="async"><figcaption>Kit handover</figcaption></figure>
+        <figure><img src="/assets/team-qr-stand.webp" alt="WhatsApp QR stand on a shop counter" width="640" height="480" loading="lazy" decoding="async"><figcaption>QR stand</figcaption></figure>
+        <figure><img src="/assets/team-textile-shop.webp" alt="Instant Broadcast team at a textile shop" width="640" height="480" loading="lazy" decoding="async"><figcaption>Showroom setup</figcaption></figure>
       </div>
-      <div>
+      <div class="kit-copy">
         <span class="eyebrow"><svg width="16" height="16"><use href="#i-gift"/></svg>Yearly plan gift</span>
         <h2>Free WhatsApp Showroom Kit</h2>
         <p class="lead">Online ke saath offline customers bhi aapki WhatsApp list mein aayein. Hamari team kit aapke showroom ke liye deti hai.</p>
@@ -413,12 +413,14 @@ fbq('track', 'PageView');
   <div class="wrap center">
     <span class="eyebrow">Surat se, aapke saath</span>
     <h2>Hamari team, hamare customers ke paas</h2>
+    <p class="lead">Setup ke baad bhi hum shop aur office tak aate hain.</p>
     <div class="team">
-      <img src="/assets/team-kit.webp" alt="Team with a client" width="640" height="480" loading="lazy">
-      <img src="/assets/team-customer-office.webp" alt="Team at a customer's office" width="640" height="480" loading="lazy">
-      <img src="/assets/team-textile-shop.webp" alt="Team at a textile shop" width="640" height="480" loading="lazy">
-      <img src="/assets/team-qr-stand.webp" alt="QR stand at a client shop" width="640" height="480" loading="lazy">
+      <figure><img src="/assets/team-kit.webp" alt="Team with a client" width="640" height="480" loading="lazy" decoding="async"><figcaption><b>Welcome kit</b>Naye customer ko kit handover</figcaption></figure>
+      <figure><img src="/assets/team-customer-office.webp" alt="Team at a customer's office" width="640" height="480" loading="lazy" decoding="async"><figcaption><b>Office visit</b>Setup ke baad training</figcaption></figure>
+      <figure><img src="/assets/team-textile-shop.webp" alt="Team at a textile shop" width="640" height="480" loading="lazy" decoding="async"><figcaption><b>Textile shop</b>Surat ke dukaan pe setup</figcaption></figure>
+      <figure><img src="/assets/team-qr-stand.webp" alt="QR stand at a client shop" width="640" height="480" loading="lazy" decoding="async"><figcaption><b>QR stand</b>Counter pe WhatsApp QR</figcaption></figure>
     </div>
+    <p class="team-note">Swipe karke dekho →</p>
   </div>
 </section>
 
@@ -468,7 +470,7 @@ fbq('track', 'PageView');
 <div class="co" id="co" role="dialog" aria-modal="true" aria-labelledby="co-title" hidden>
   <button class="x" type="button" id="co-x" aria-label="Close">×</button>
   <h3 id="co-title">Checkout</h3>
-  <div style="color:var(--ink-2);font-size:14px">Account banane aur payment ke liye bas 2 detail.</div>
+  <div style="color:var(--ink-2);font-size:14px">Bas 2 detail, phir Razorpay pe secure payment.</div>
   <div class="mini" id="co-mini"></div>
   <form id="co-form" novalidate>
     <div class="field"><label for="co-name">Aapka naam</label><input id="co-name" name="name" autocomplete="name" maxlength="80" required></div>
@@ -478,7 +480,8 @@ fbq('track', 'PageView');
     <div class="field"><label for="co-biz">Business ka naam <span style="color:var(--muted);font-weight:500">(optional)</span></label><input id="co-biz" name="business" autocomplete="organization" maxlength="100"></div>
     <p class="err" id="co-err" hidden></p>
     <p class="consent">Is number pe hum aapke order aur setup ke baare mein WhatsApp/call karenge. Offers ke liye nahi — jab tak aap na kaho. <a href="https://instantbroadcast.in/privacy-policy" target="_blank" rel="noopener">Privacy</a></p>
-    <button class="btn btn-main btn-block" type="submit" id="co-submit"><span class="lbl">Payment pe chalo</span></button>
+    <button class="btn btn-main btn-block" type="submit" id="co-submit"><span class="lbl">Payment karo</span></button>
+    <p class="consent" style="text-align:center;margin:10px 0 0">🔒 Secure payment by Razorpay · UPI, card, net banking</p>
   </form>
 </div>
 

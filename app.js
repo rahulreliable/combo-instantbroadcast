@@ -16,10 +16,9 @@
       ai_calling: { name: 'AI Calling agent',                     price: null },
       kit:        { name: 'WhatsApp Showroom Kit',                price: 0, free: true }
     },
-    // Where "Payment pe chalo" sends the buyer. {addons} is replaced with the ticked add-on ids.
-    // Today: Instant Broadcast sign-up on the yearly plan (plan=38). Swap for a Razorpay
-    // payment link / cart URL when one exists for each combo.
-    checkoutUrl: 'https://instantbroadcast.in/login?mode=signup&plan=38&addons={addons}',
+    // Razorpay: orders are created and verified by worker.js (keep its PRICES in step with these).
+    orderApi: '/api/order',
+    verifyApi: '/api/verify',
     leadsApi: 'https://instantbroadcast.in/api/leads/special-offer',
     capiApi: 'https://instantbroadcast.in/api/tracking/meta-capi',
     source: 'combo_landing',
@@ -191,6 +190,20 @@
   var phoneIn = $('#co-phone');
   phoneIn.addEventListener('input', function () { phoneIn.value = phoneIn.value.replace(/[^\d ]/g, ''); });
 
+  // Razorpay Checkout script, loaded only when someone pays
+  var rzpLoading = null;
+  function loadRazorpay() {
+    if (window.Razorpay) return Promise.resolve();
+    if (rzpLoading) return rzpLoading;
+    rzpLoading = new Promise(function (resolve) {
+      var sc = d.createElement('script');
+      sc.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      sc.onload = resolve; sc.onerror = function () { rzpLoading = null; resolve(); };
+      d.head.appendChild(sc);
+    });
+    return rzpLoading;
+  }
+
   var sending = false;
   $('#co-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -224,6 +237,8 @@
 
     sending = true;
     var btn = $('#co-submit'); btn.setAttribute('aria-busy', 'true'); $('.lbl', btn).textContent = 'Ek second…';
+    // warm up Razorpay while we save the lead
+    loadRazorpay();
     ss('ib_combo_event_id', eventId);
 
     // Lead counted once: browser pixel + server copy (same event id → Meta de-duplicates)
@@ -236,29 +251,78 @@
       }).catch(function () {});
     } catch (x) {}
 
-    var url = CONFIG.checkoutUrl.replace('{addons}', encodeURIComponent(addons.join(',')));
-    var done = false;
-    function go() { if (done) return; done = true; location.href = url; }
+    // Save the lead first (fire-and-forget) so the team can follow up even if payment is abandoned
     function post(body) {
       return fetch(CONFIG.leadsApi, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true, credentials: 'omit' });
     }
-    setTimeout(go, 5000); // slow network: carry on, the keepalive request keeps running
     post(full).then(function (r) {
       if (r.ok) return r.json().then(function (j) { return !(j && j.success === false); }, function () { return true; });
       return false;
-    }).then(function (ok) {
-      if (ok) return setTimeout(go, 350); // a moment for the pixel to send
-      return post(minimal).then(function () { go(); }, function () { go(); });
-    }).catch(function () {
-      if (done) return;
-      sending = false; btn.removeAttribute('aria-busy'); $('.lbl', btn).textContent = 'Payment pe chalo';
+    }).then(function (ok) { if (!ok) return post(minimal); }).catch(function () {});
+
+    function reset(label) { sending = false; btn.removeAttribute('aria-busy'); $('.lbl', btn).textContent = label || 'Payment karo'; }
+    function showErr(msg) {
       err.textContent = '';
-      err.appendChild(d.createTextNode('Connection nahi ho paya. Dobara try karo, ya '));
+      err.appendChild(d.createTextNode(msg + ' '));
       var a = d.createElement('a');
       a.href = 'https://wa.me/' + CONFIG.waNumber + '?text=' + encodeURIComponent('Hi, mujhe Instant Broadcast combo lena hai. Naam: ' + name + '. Items: Portal' + addons.map(function (id) { return ' + ' + CONFIG.items[id].name; }).join('') + ' [combo-lp]');
       a.textContent = 'WhatsApp pe order karo';
       err.appendChild(a); err.appendChild(d.createTextNode('.'));
       err.hidden = false;
-    });
+    }
+
+    // 1. Create the Razorpay order on our Worker (amount is decided on the server)
+    Promise.all([
+      loadRazorpay(),
+      fetch(CONFIG.orderApi, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+        body: JSON.stringify({ name: name, phone: phone, business: biz, addons: addons, utm_campaign: u.utm_campaign || '', utm_content: u.utm_content || '' })
+      }).then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
+    ]).then(function (res) {
+      var o = res[1];
+      if (!o || !o.ok || !window.Razorpay) { reset(); showErr('Payment abhi shuru nahi ho paya. Thodi der mein dobara try karo, ya'); return; }
+      ss('ib_pending_order', JSON.stringify({ orderNo: o.orderNo, amount: o.amount / 100, items: o.items, name: name, phone: phone }));
+      fb('track', 'AddPaymentInfo', { currency: 'INR', value: o.amount / 100 });
+      dl({ event: 'add_payment_info', currency: 'INR', value: o.amount / 100, order_no: o.orderNo });
+
+      // 2. Razorpay Checkout
+      var rzp = new window.Razorpay({
+        key: o.key,
+        order_id: o.orderId,
+        amount: o.amount,
+        currency: o.currency,
+        name: 'Instant Broadcast',
+        description: 'Combo · Order ' + o.orderNo,
+        image: location.origin + '/assets/apple-touch-icon.png',
+        prefill: { name: name, contact: '+91' + phone },
+        notes: { order_no: o.orderNo },
+        theme: { color: '#007A5C' },
+        modal: {
+          confirm_close: true,
+          ondismiss: function () { reset(); err.textContent = 'Payment complete nahi hua. Dobara "Payment karo" dabao.'; err.hidden = false; }
+        },
+        // 3. Verify on our Worker, then go to the thank-you page
+        handler: function (resp) {
+          $('.lbl', btn).textContent = 'Payment confirm ho raha hai…';
+          fetch(CONFIG.verifyApi, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
+            body: JSON.stringify(resp)
+          }).then(function (r) { return r.json(); }).then(function (v) {
+            if (!v || !v.ok) throw new Error('verify');
+            ss('ib_order', JSON.stringify({ verified: true, orderNo: v.orderNo, paymentId: v.paymentId, amount: v.amount, items: v.items, name: name, phone: phone, addons: addons }));
+            location.href = '/thank-you/?order=' + encodeURIComponent(v.orderNo);
+          }).catch(function () {
+            // Paid but the check didn't come back: still show the order, the team verifies it in Razorpay
+            ss('ib_order', JSON.stringify({ verified: false, orderNo: o.orderNo, paymentId: resp.razorpay_payment_id, amount: o.amount / 100, items: o.items, name: name, phone: phone, addons: addons }));
+            location.href = '/thank-you/?order=' + encodeURIComponent(o.orderNo);
+          });
+        }
+      });
+      rzp.on('payment.failed', function (r) {
+        dl({ event: 'payment_failed', order_no: o.orderNo, reason: (r && r.error && r.error.reason) || '' });
+      });
+      rzp.open();
+      $('.lbl', btn).textContent = 'Razorpay khul raha hai…';
+    }).catch(function () { reset(); showErr('Connection nahi ho paya. Dobara try karo, ya'); });
   });
 })();

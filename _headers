@@ -2,5 +2,11 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
 
+/thank-you
+  X-Robots-Tag: noindex, nofollow
+
+/thank-you/*
+  X-Robots-Tag: noindex, nofollow
+
 /assets/*
   Cache-Control: public, max-age=604800
