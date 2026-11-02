@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css?v=3">
 <style>
   .ty{max-width:680px;margin:0 auto;padding:8px 16px 60px}
   .ok-ic{width:64px;height:64px;border-radius:50%;background:var(--tint-2);color:var(--green-d);display:grid;place-items:center;margin:8px auto 14px}
@@ -34,9 +34,7 @@
   .act p{font-size:14px;color:var(--ink-2);margin:2px 0 0}
   .act > .btn{grid-column:1/-1;width:100%;min-height:48px;padding:12px 16px}
   .act.wa .ic{background:#E7F8EE;color:#128C4B}
-  .btn-wa{background:#1FA855;color:#fff}
-  .btn-wa:hover{background:#178A45}
-  #demo-box{grid-column:1/-1;display:none;border-top:1px dashed var(--line);padding-top:14px;margin-top:4px}
+    #demo-box{grid-column:1/-1;display:none;border-top:1px dashed var(--line);padding-top:14px;margin-top:4px}
   #demo-box.open{display:block}
   .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:6px 0 12px}
   .chip{flex:none;border:1.5px solid #CFDCD6;background:#fff;border-radius:12px;padding:9px 12px;font-weight:600;font-size:14px;color:var(--ink);text-align:center;line-height:1.2}
@@ -53,8 +51,8 @@
 fbq('init', '1191549192775541');
 fbq('track', 'PageView');
 </script>
-<script src="/track.js" defer></script>
-<script src="/thankyou.js" defer></script>
+<script src="/track.js?v=3" defer></script>
+<script src="/thankyou.js?v=3" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -76,7 +74,7 @@ fbq('track', 'PageView');
   <div class="order" id="order">
     <div class="order-no">
       <div><small>Order number</small><b id="o-no">—</b></div>
-      <button class="copy" type="button" id="o-copy">Copy</button>
+      <button class="btn btn-ghost btn-sm" type="button" id="o-copy">Copy</button>
     </div>
     <div class="order-body">
       <div class="kv"><span>Amount paid</span><b id="o-amt">—</b></div>
@@ -113,7 +111,7 @@ fbq('track', 'PageView');
       <div class="act wa">
         <span class="ic"><svg><use href="#i-wa"/></svg></span>
         <div><h3>WhatsApp pe baat karo</h3><p>Koi sawaal? Order number ke saath seedha message karo.</p></div>
-        <a class="btn btn-wa" id="go-wa" href="https://wa.me/919228173004?text=Hi%2C%20maine%20Instant%20Broadcast%20combo%20kharida%20hai.%20%5Bcombo-lp%5D" target="_blank" rel="noopener">WhatsApp karo</a>
+        <a class="btn btn-main" id="go-wa" href="https://wa.me/919228173004?text=Hi%2C%20maine%20Instant%20Broadcast%20combo%20kharida%20hai.%20%5Bcombo-lp%5D" target="_blank" rel="noopener"><svg><use href="#i-wa"/></svg>WhatsApp karo</a>
       </div>
     </div>
   </section>

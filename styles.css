@@ -46,8 +46,19 @@ h3{font-size:20px;font-weight:700}
 .btn-2l .row1{display:inline-flex;align-items:center;gap:8px}
 .btn-2l .row2{font-size:12px;font-weight:600;opacity:.9;letter-spacing:.02em}
 .btn-2l .row2 s{opacity:.7;margin-right:4px}
-.btn-ghost{background:#fff;color:var(--green-d);border:1.5px solid var(--green-d)}
-.btn-ghost:hover{background:var(--tint)}
+/* Secondary CTA: white button with a moving green border and the same light sweep */
+.btn-ghost{color:var(--green-d);overflow:hidden;isolation:isolate;border:2px solid transparent;
+  background:linear-gradient(#fff,#fff) padding-box,linear-gradient(110deg,#005C45,#00A67E,#7FE0BF,#00A67E,#005C45) border-box;background-size:100% 100%,260% 100%;
+  box-shadow:0 6px 16px -10px rgba(0,122,92,.45);animation:ib-border 4s linear infinite}
+.btn-ghost::after{content:"";position:absolute;top:-20%;bottom:-20%;left:-70%;width:40%;z-index:-1;pointer-events:none;
+  background:linear-gradient(100deg,rgba(0,166,126,0) 0%,rgba(0,166,126,.16) 50%,rgba(0,166,126,0) 100%);transform:skewX(-18deg);animation:ib-shine 3.6s ease-in-out 1.2s infinite}
+.btn-ghost:hover{transform:translateY(-3px);background:linear-gradient(var(--tint),var(--tint)) padding-box,linear-gradient(110deg,#005C45,#00A67E,#7FE0BF,#00A67E,#005C45) border-box;background-size:100% 100%,260% 100%;box-shadow:0 12px 24px -12px rgba(0,122,92,.55)}
+.btn-ghost:hover .arr{transform:translateX(4px)}
+.btn-ghost .arr{transition:transform .25s ease}
+@keyframes ib-border{0%{background-position:0 0,0% 50%}100%{background-position:0 0,260% 50%}}
+/* small header WhatsApp button */
+.btn-sm{min-height:40px;padding:8px 14px;font-size:14px;border-radius:12px;gap:7px}
+.btn-sm svg{width:17px;height:17px}
 .btn-block{width:100%}
 .btn svg{width:20px;height:20px;flex:none}
 .btn .arr{width:18px;height:18px}
@@ -311,4 +322,4 @@ h3{font-size:20px;font-weight:700}
 
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 [hidden]{display:none!important}
-@media (prefers-reduced-motion:reduce){.btn-main::after{display:none}}
+@media (prefers-reduced-motion:reduce){.btn-main::after,.btn-ghost::after{display:none}}
