@@ -340,3 +340,14 @@ h3{font-size:20px;font-weight:700}
 .pick b.free{color:var(--green-d)}
 .pick .pp small{font-weight:600;color:var(--muted);font-size:12px}
 .pick input:focus-visible + .tk{outline:3px solid #8FD9BD;outline-offset:2px}
+
+/* hero with demo video */
+.hero-grid{grid-template-areas:"copy" "media" "rest"}
+.hero-copy{grid-area:copy}.hero-media{grid-area:media}.hero-rest{grid-area:rest}
+.hero-grid{row-gap:22px}
+.hero-rest .trio{margin-top:0}
+@media(min-width:960px){
+  .hero-grid{grid-template-columns:1fr 1fr;grid-template-areas:"copy media" "rest media";column-gap:48px;row-gap:8px;align-items:start}
+  .hero-media{align-self:start;margin-top:56px;position:sticky;top:24px}
+  .hero h1{font-size:clamp(34px,4.2vw,50px)}
+}

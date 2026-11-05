@@ -11,7 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=5">
+<link rel="preload" as="image" href="/assets/demo-video-640.webp" media="(max-width: 700px)">
+<link rel="preload" as="image" href="/assets/demo-video.webp" media="(min-width: 701px)">
+<link rel="stylesheet" href="/styles.css?v=6">
 <meta property="og:title" content="Instant Broadcast — 7 din FREE trial: WhatsApp portal + AI Chatbot + AI Calling">
 <meta property="og:description" content="WhatsApp portal + AI Chatbot + AI Calling. 7 din FREE trial.">
 <meta property="og:image" content="https://combo.instantbroadcast.in/assets/team-kit.webp">
@@ -24,6 +26,7 @@ fbq('track', 'PageView');
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1191549192775541&amp;ev=PageView&amp;noscript=1"></noscript>
 <script src="/track.js?v=3" defer></script>
 <script src="/app.js?v=5" defer></script>
+<script src="/hero-video.js?v=1" defer></script>
 </head>
 <body>
 
@@ -61,11 +64,23 @@ fbq('track', 'PageView');
 <!-- HERO -->
 <section class="hero">
   <div class="wrap hero-grid">
-    <div>
+    <div class="hero-copy">
       <span class="eyebrow"><svg width="16" height="16"><use href="#i-shield"/></svg>Official WhatsApp Business API</span>
       <h1>Ek combo. <span class="hl">Teen kaam</span> — message, chat aur call. Sab automatic.</h1>
       <p class="sub">Instant Broadcast portal se customers ko offer bhejo, AI Chatbot se din-raat WhatsApp pe jawab do, aur AI Calling agent se har lead ko call karke demo book karo. Web aur mobile app dono pe.</p>
+    </div>
 
+    <div class="hero-media">
+      <div class="ibv" data-yt="XL-ovqkwRTA">
+        <button type="button" class="ibv-btn" aria-label="Play video: Instant Broadcast portal demo (Hindi)">
+          <img src="/assets/demo-video.webp" srcset="/assets/demo-video-640.webp 640w, /assets/demo-video.webp 1280w" sizes="(max-width: 700px) 100vw, 560px" alt="Instant Broadcast platform demo video thumbnail" width="1280" height="720" fetchpriority="high" decoding="async">
+          <span class="ibv-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.8v14.4a1 1 0 0 0 1.5.9l11.5-7.2a1 1 0 0 0 0-1.8L8.5 3.9A1 1 0 0 0 7 4.8z"/></svg></span>
+          <span class="ibv-cap"><i></i>Portal demo dekho · Hindi</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero-rest">
       <div class="trio">
         <div><span class="ic"><svg><use href="#i-broadcast"/></svg></span>WhatsApp portal<br>web + app</div>
         <div><span class="ic"><svg><use href="#i-bot"/></svg></span>AI Chatbot<br>24x7 reply</div>
@@ -84,23 +99,6 @@ fbq('track', 'PageView');
         <span><span class="stars">★★★★★</span> <b>5.0</b> Google Play (17 ratings)</span>
         <img class="mbp" src="/assets/meta-business-partner.webp" alt="Meta Business Partner" width="280" height="112">
       </div>
-    </div>
-
-    <div class="stage" aria-hidden="true">
-      <div class="phone"><div class="screen">
-        <div class="chat-head"><span class="av"><img src="/assets/favicon-32.png" alt=""></span><div><b>Shree Saree Centre</b><small>Official business account</small></div></div>
-        <div class="chat">
-          <div class="msg"><div class="card-img">Diwali Sale</div>Namaste Priya ji 🙏 Nayi Banarasi range aa gayi hai. Is hafte 20% off.<time>10:02</time>
-            <div class="qr"><span>Catalogue dekho</span><span>Shop ka location</span></div></div>
-          <div class="msg me">Catalogue bhejo please<time>10:04</time></div>
-          <div class="msg">Yeh rahi 24 nayi designs 👇 Koi pasand aaye toh number bata dena.<time>10:04</time></div>
-          <div class="msg me">No. 7 ka price?<time>23:41</time></div>
-          <div class="msg">No. 7 — ₹3,450. Kal shop pe aana hai ya ghar bhejein?<time>23:41</time></div>
-        </div>
-      </div></div>
-      <div class="float f1"><span class="ic"><svg><use href="#i-broadcast"/></svg></span><div><b>Broadcast sent</b><small>2,140 customers</small></div></div>
-      <div class="float f2"><span class="ic"><svg><use href="#i-bot"/></svg></span><div><b>Chatbot ne reply kiya</b><small>raat 11:41 baje</small></div></div>
-      <div class="float f3"><span class="ic"><svg><use href="#i-call"/></svg></span><div><b>AI call: demo booked</b><small>Kal 11:30 AM</small></div></div>
     </div>
   </div>
 </section>
