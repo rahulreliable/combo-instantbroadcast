@@ -18,9 +18,18 @@
   var first = String(o.name || '').split(' ')[0];
 
   // 1. Order details (text only, never HTML)
-  if (first) $('#ty-title').textContent = 'Shukriya, ' + first + '! Payment ho gaya.';
+  var isTrial = o.kind === 'trial' || !o.paymentId;
+  if (isTrial) {
+    if (first) $('#ty-title').textContent = 'Shukriya, ' + first + '! 7 din FREE trial request mil gaya.';
+  } else {
+    if (first) $('#ty-title').textContent = 'Shukriya, ' + first + '! Payment ho gaya.';
+    $('#ty-sub').textContent = 'Aapka order confirm hai. Order number sambhal ke rakhein — support pe yahi poocha jayega.';
+    $('#o-label').textContent = 'Order number';
+    $('#o-amt-l').textContent = 'Amount paid';
+    $('#o-pay-row').hidden = false;
+  }
   if (orderNo) $('#o-no').textContent = orderNo;
-  if (o.amount) $('#o-amt').textContent = inr(o.amount) + ' (GST ke saath)';
+  if (o.amount && !isTrial) $('#o-amt').textContent = inr(o.amount) + ' (GST ke saath)';
   if (o.items && o.items.length) $('#o-items').textContent = o.items.join(' + ');
   if (o.paymentId) $('#o-pay').textContent = o.paymentId;
   if (o.verified === false) $('#o-pending').hidden = false;
@@ -38,7 +47,7 @@
   });
 
   // 2. WhatsApp + onboarding links carry the order number
-  var waText = 'Hi, maine Instant Broadcast combo kharida hai.' + (orderNo ? ' Order: ' + orderNo + '.' : '') + (o.name ? ' Naam: ' + o.name + '.' : '') + ' [combo-lp]';
+  var waText = (isTrial ? 'Hi, maine Instant Broadcast ka 7 din FREE trial maanga hai.' : 'Hi, maine Instant Broadcast combo kharida hai.') + (orderNo ? (isTrial ? ' Request: ' : ' Order: ') + orderNo + '.' : '') + (o.name ? ' Naam: ' + o.name + '.' : '') + ' [combo-lp]';
   $('#go-wa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(waText);
   function dl(x) { window.dataLayer = window.dataLayer || []; window.dataLayer.push(x); }
   $('#go-onboard').addEventListener('click', function () { dl({ event: 'start_onboarding', order_no: orderNo }); });
@@ -129,7 +138,7 @@
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'omit', keepalive: true,
       body: JSON.stringify({
         phone: phone, name: o.name || '', email: '', source: 'combo_demo', couponCode: '',
-        message: 'DEMO after purchase · Order ' + (orderNo || '?') + ' · ' + when,
+        message: (isTrial ? 'DEMO for 7-day trial · Request ' : 'DEMO after purchase · Order ') + (orderNo || '?') + ' · ' + when,
         orderNo: orderNo, demoDate: iso, demoDay: dy.label, demoSlot: sl[1]
       })
     }).then(function (r) { return r.ok; }).catch(function () { return false; }).then(function (ok) {

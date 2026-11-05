@@ -1,123 +1,70 @@
-// Instant Broadcast — Combo page: combo builder (tick to add), cart, checkout, videos, sticky bar.
+// Instant Broadcast — Combo page (7-day FREE trial): product ticks, trial popup, videos, sticky bar, timed popup.
+// No prices on this page. The popup saves the lead and opens /thank-you/ with a unique request number.
+// (worker.js still has the Razorpay order/verify API; it is not used while the page runs the free trial.)
 (function () {
   'use strict';
 
-  // ─────────────────────────────────────────────────────────────
-  // CONFIG — edit prices and the checkout link here only.
-  // Add-on price: set a yearly number in ₹ (before GST), e.g. 6000.
-  // While a price is null the add-on shows "Price team confirm karegi"
-  // and is not counted in the total (it is still sent with the order).
-  // ─────────────────────────────────────────────────────────────
   var CONFIG = {
-    gstRate: 0.18,
     items: {
-      portal:     { name: 'Instant Broadcast portal (web + app)', price: 15000 },
-      ai_chatbot: { name: 'AI Chatbot (24x7)',                    price: null },
-      ai_calling: { name: 'AI Calling agent',                     price: null },
-      kit:        { name: 'WhatsApp Showroom Kit',                price: 0, free: true }
+      portal:     { name: 'Instant Broadcast portal (web + app)' },
+      ai_chatbot: { name: 'AI Chatbot (24x7)' },
+      ai_calling: { name: 'AI Calling agent' }
     },
-    // Razorpay: orders are created and verified by worker.js (keep its PRICES in step with these).
-    orderApi: '/api/order',
-    verifyApi: '/api/verify',
     leadsApi: 'https://instantbroadcast.in/api/leads/special-offer',
     capiApi: 'https://instantbroadcast.in/api/tracking/meta-capi',
-    source: 'combo_landing',
-    waNumber: '919228173004'
+    source: 'combo_trial',
+    waNumber: '919228173004',
+    autoPopupMs: 4000
   };
 
   var d = document;
   var $ = function (s, r) { return (r || d).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || d).querySelectorAll(s)); };
-  var inr = function (n) { return '₹' + Math.round(n).toLocaleString('en-IN'); };
   var dl = function (o) { window.dataLayer = window.dataLayer || []; window.dataLayer.push(o); };
   var fb = function () { try { window.fbq && window.fbq.apply(null, arguments); } catch (e) {} };
   function ss(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+  function sg(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
   function utm() { try { return JSON.parse(sessionStorage.getItem('ib_utm') || '{}') || {}; } catch (e) { return {}; } }
 
-  // ── cart state ──
+  // ── which products the visitor wants to try ──
   var selected = {}; // addon id -> true
-
-  function priceLabel(id) {
-    var it = CONFIG.items[id];
-    return it.price == null ? 'Price team confirm karegi' : inr(it.price) + ' / saal + GST';
+  function names() {
+    return ['Portal'].concat(Object.keys(selected).map(function (id) { return id === 'ai_chatbot' ? 'AI Chatbot' : 'AI Calling'; }));
   }
-  $$('[data-price-label]').forEach(function (el) {
-    var id = el.getAttribute('data-price-label');
-    var it = CONFIG.items[id];
-    if (it.price == null) { el.innerHTML = '<small style="font-weight:600;color:var(--muted)">' + priceLabel(id) + '</small>'; }
-    else { el.innerHTML = inr(it.price) + ' <small>/ saal + GST</small>'; }
-  });
-
-  $$('[data-pp]').forEach(function (el) {
-    var it = CONFIG.items[el.getAttribute('data-pp')];
-    if (it.price == null) el.innerHTML = '<small>price on call</small>'; else el.textContent = inr(it.price);
-  });
   function syncPicks() {
     $$('#co-picks .pick[data-id]').forEach(function (p) {
       var on = !!selected[p.getAttribute('data-id')];
       p.classList.toggle('on', on); $('input', p).checked = on;
     });
   }
-
-  function totals() {
-    var sub = CONFIG.items.portal.price, tbc = [];
-    Object.keys(selected).forEach(function (id) {
-      var p = CONFIG.items[id].price;
-      if (p == null) tbc.push(CONFIG.items[id].name); else sub += p;
-    });
-    var gst = sub * CONFIG.gstRate;
-    return { sub: sub, gst: gst, total: sub + gst, tbc: tbc };
-  }
-
   function render() {
-    var t = totals();
     var lines = $('#cart-lines');
-    lines.innerHTML = '';
-    function line(label, val, cls) {
-      var li = d.createElement('li');
-      var a = d.createElement('span'); a.textContent = label;
-      var b = d.createElement('span'); b.textContent = val; if (cls) b.className = cls;
-      li.appendChild(a); li.appendChild(b); lines.appendChild(li);
+    if (lines) {
+      lines.innerHTML = '';
+      var add = function (label, val) {
+        var li = d.createElement('li');
+        var a = d.createElement('span'); a.textContent = label;
+        var b = d.createElement('span'); b.textContent = val; b.className = 'free';
+        li.appendChild(a); li.appendChild(b); lines.appendChild(li);
+      };
+      add(CONFIG.items.portal.name, '7 din FREE');
+      ['ai_chatbot', 'ai_calling'].forEach(function (id) { if (selected[id]) add(CONFIG.items[id].name, '7 din FREE'); });
     }
-    line(CONFIG.items.portal.name, inr(CONFIG.items.portal.price));
-    ['ai_chatbot', 'ai_calling'].forEach(function (id) {
-      if (!selected[id]) return;
-      var p = CONFIG.items[id].price;
-      line(CONFIG.items[id].name, p == null ? 'Price on call' : inr(p), p == null ? 'tbc' : '');
-    });
-    line(CONFIG.items.kit.name, 'FREE', 'free');
-    $('#c-sub').textContent = inr(t.sub);
-    $('#c-gst').textContent = inr(t.gst);
-    $('#c-total').textContent = inr(t.total);
-    $('#c-fine').textContent = t.tbc.length
-      ? t.tbc.join(' aur ') + ' ka price checkout ke baad hamari team confirm karegi — abhi total mein nahi joda.'
-      : 'Total mein 18% GST shamil hai. Billing saal mein ek baar.';
-    var names = ['Portal'].concat(Object.keys(selected).map(function (id) { return id === 'ai_chatbot' ? 'AI Chatbot' : 'AI Calling'; }));
-    $('#s-items').textContent = names.join(' + ') + ' + Free kit';
-    $('#s-total').textContent = inr(t.total) + ' / saal' + (t.tbc.length ? ' + add-on' : '');
+    var si = $('#s-items'); if (si) si.textContent = names().join(' + ');
     syncPicks();
-    if (typeof fillMini === 'function') fillMini();
   }
-
   function setAddon(id, on, via) {
     var label = $('.item[data-id="' + id + '"]');
     if (!label) return;
-    var box = $('input', label);
-    box.checked = on;
+    $('input', label).checked = on;
     label.classList.toggle('on', on);
     if (on) selected[id] = true; else delete selected[id];
     render();
-    if (on) {
-      var p = CONFIG.items[id].price;
-      fb('track', 'AddToCart', { content_ids: [id], content_name: CONFIG.items[id].name, content_type: 'product', currency: 'INR', value: p || 0 });
-      dl({ event: 'add_to_cart', item_id: id, via: via || 'tick', lead_source: CONFIG.source });
-    }
+    if (on) dl({ event: 'select_item', item_id: id, via: via || 'tick', lead_source: CONFIG.source });
   }
-
   $$('.item input[name="addon"]').forEach(function (box) {
     box.addEventListener('change', function () { setAddon(box.value, box.checked, 'tick'); });
   });
-  // "AI Chatbot add karo" / "AI Calling add karo" buttons in the feature sections
   $$('[data-add]').forEach(function (a) {
     a.addEventListener('click', function () { setAddon(a.getAttribute('data-add'), true, 'section_button'); });
   });
@@ -160,51 +107,37 @@
     vr.appendChild(a);
   });
 
-  // ── sticky bar: shows after the hero, hides while the cart is on screen ──
+  // ── sticky bar: shows after the hero, hides while the product list is on screen ──
   var sticky = $('#sticky'), hero = $('.hero'), cart = $('.cart');
   var heroGone = false, cartVisible = false;
   function upd() { var show = heroGone && !cartVisible; sticky.classList.toggle('show', show); sticky.setAttribute('aria-hidden', show ? 'false' : 'true'); }
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (e) { heroGone = !e[0].isIntersecting; upd(); }, { rootMargin: '-200px 0px 0px 0px' }).observe(hero);
-    new IntersectionObserver(function (e) { cartVisible = e[0].isIntersecting; upd(); }).observe(cart);
+    if (cart) new IntersectionObserver(function (e) { cartVisible = e[0].isIntersecting; upd(); }).observe(cart);
   }
 
-  // ── checkout drawer ──
-  var co = $('#co'), back = $('#co-back'), lastFocus = null;
-  function fillMini() {
-    var mini = $('#co-mini');
-    if (!mini) return;
-    var t = totals();
-    mini.textContent = '';
-    var b = d.createElement('b'); b.textContent = inr(t.total) + ' / saal';
-    mini.appendChild(d.createTextNode('Total: '));
-    mini.appendChild(b);
-    mini.appendChild(d.createTextNode(' (18% GST ke saath)' + (t.tbc.length ? '. ' + t.tbc.join(' aur ') + ' ka price team call pe confirm karegi.' : '.')));
-  }
+  // ── trial popup ──
+  var co = $('#co'), back = $('#co-back'), lastFocus = null, popupUsed = false;
   function openCo(via) {
-    var t = totals();
+    popupUsed = true;
     syncPicks();
-    fillMini();
     lastFocus = d.activeElement;
     co.hidden = false;
     requestAnimationFrame(function () { co.classList.add('open'); back.classList.add('open'); });
     d.body.style.overflow = 'hidden';
-    setTimeout(function () { $('#co-name').focus(); }, 60);
-    var ids = ['portal'].concat(Object.keys(selected));
-    fb('track', 'InitiateCheckout', { content_ids: ids, num_items: ids.length, currency: 'INR', value: Math.round(t.total) });
-    dl({ event: 'begin_checkout', currency: 'INR', value: Math.round(t.total), items: ids.join(','), via: via, lead_source: CONFIG.source });
+    if (via !== 'auto_4s') setTimeout(function () { $('#co-name').focus(); }, 60);
+    dl({ event: 'popup_open', popup_source: via, lead_source: CONFIG.source });
   }
   function closeCo() {
     co.classList.remove('open'); back.classList.remove('open');
     d.body.style.overflow = '';
     setTimeout(function () { co.hidden = true; }, 250);
-    if (lastFocus) lastFocus.focus();
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
   $$('[data-checkout]').forEach(function (b) { b.addEventListener('click', function () { openCo(b.getAttribute('data-checkout')); }); });
   $$('#co-picks input').forEach(function (box) {
     box.addEventListener('change', function () { setAddon(box.value, box.checked, 'popup_tick'); });
   });
-  // Every "Combo banao" / "add karo" button opens the popup directly (no scrolling to the builder)
   $$('a[href="#combo"]').forEach(function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault();
@@ -215,21 +148,26 @@
   back.addEventListener('click', closeCo);
   d.addEventListener('keydown', function (e) { if (e.key === 'Escape' && co.classList.contains('open')) closeCo(); });
 
+  // Timed popup: 4 s after the page opens, once per visit (not if already opened or while typing).
+  setTimeout(function () {
+    var ae = d.activeElement;
+    if (sg('ib_auto_popup') === '1' || popupUsed || (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) return;
+    ss('ib_auto_popup', '1');
+    openCo('auto_4s');
+  }, CONFIG.autoPopupMs);
+
   var phoneIn = $('#co-phone');
   phoneIn.addEventListener('input', function () { phoneIn.value = phoneIn.value.replace(/[^\d ]/g, ''); });
 
-  // Razorpay Checkout script, loaded only when someone pays
-  var rzpLoading = null;
-  function loadRazorpay() {
-    if (window.Razorpay) return Promise.resolve();
-    if (rzpLoading) return rzpLoading;
-    rzpLoading = new Promise(function (resolve) {
-      var sc = d.createElement('script');
-      sc.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      sc.onload = resolve; sc.onerror = function () { rzpLoading = null; resolve(); };
-      d.head.appendChild(sc);
-    });
-    return rzpLoading;
+  // Unique, readable request number: IB-YYMMDD-XXXXX (no 0/O/1/I)
+  function requestNo() {
+    var now = new Date(Date.now() + 5.5 * 3600 * 1000);
+    var ymd = now.toISOString().slice(2, 10).replace(/-/g, '');
+    var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code = '';
+    var bytes = new Uint8Array(5);
+    try { crypto.getRandomValues(bytes); } catch (e) { for (var i = 0; i < 5; i++) bytes[i] = Math.floor(Math.random() * 256); }
+    for (var j = 0; j < 5; j++) code += abc[bytes[j] % abc.length];
+    return 'IB-' + ymd + '-' + code;
   }
 
   var sending = false;
@@ -246,111 +184,57 @@
     if (name.length < 2) { err.textContent = 'Apna naam likho.'; err.hidden = false; $('#co-name').focus(); return; }
     if (!/^[6-9]\d{9}$/.test(phone)) { err.textContent = 'Sahi 10 digit WhatsApp number daalo.'; err.hidden = false; phoneIn.focus(); return; }
 
-    var t = totals();
     var addons = Object.keys(selected);
-    var eventId = 'combo_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    var reqNo = requestNo();
     var u = utm();
-    var summary = 'Combo page checkout. Items: Portal (₹15,000/yr)' +
-      addons.map(function (id) { return ' + ' + CONFIG.items[id].name + (CONFIG.items[id].price == null ? ' (price TBC)' : ' (' + inr(CONFIG.items[id].price) + ')'); }).join('') +
-      ' + Showroom Kit (free). Total shown: ' + inr(t.total) + ' incl. GST.' + (biz ? ' Business: ' + biz + '.' : '') +
-      (u.utm_campaign ? ' Campaign: ' + u.utm_campaign : '');
+    var items = [CONFIG.items.portal.name].concat(addons.map(function (id) { return CONFIG.items[id].name; }));
+    var summary = '7 DIN FREE TRIAL request ' + reqNo + ' · Try karna hai: ' + items.join(' + ') +
+      (biz ? ' · Business: ' + biz : '') + (u.utm_campaign ? ' · Campaign: ' + u.utm_campaign : '');
     var full = {
-      phone: phone, name: name, email: '', source: CONFIG.source, couponCode: '',
-      message: summary, company: biz, addons: addons.join(','), cartTotal: Math.round(t.total),
+      phone: phone, name: name + ' | 7 din FREE trial', email: '', source: CONFIG.source, couponCode: '',
+      message: summary, description: summary, company: biz, addons: addons.join(','), orderNo: reqNo,
       pageUrl: location.href.split('#')[0],
       utm_source: u.utm_source || '', utm_medium: u.utm_medium || '', utm_campaign: u.utm_campaign || '',
       utm_content: u.utm_content || '', utm_term: u.utm_term || '', fbclid: u.fbclid || '', gclid: u.gclid || ''
     };
-    var minimal = { phone: phone, name: name, email: '', source: CONFIG.source, couponCode: '' };
+    var minimal = { phone: phone, name: name + ' | 7 din FREE trial', email: '', source: CONFIG.source, couponCode: '' };
 
     sending = true;
     var btn = $('#co-submit'); btn.setAttribute('aria-busy', 'true'); $('.lbl', btn).textContent = 'Ek second…';
-    // warm up Razorpay while we save the lead
-    loadRazorpay();
-    ss('ib_combo_event_id', eventId);
 
-    // Lead counted once: browser pixel + server copy (same event id → Meta de-duplicates)
-    fb('track', 'Lead', { content_name: 'combo_checkout', currency: 'INR', value: Math.round(t.total) }, { eventID: eventId });
-    dl({ event: 'generate_lead', lead_source: CONFIG.source, form_name: 'combo_checkout', value: Math.round(t.total), currency: 'INR' });
+    // Lead counted once: browser pixel + server copy (same event id, so Meta de-duplicates)
+    fb('track', 'Lead', { content_name: 'combo_trial' }, { eventID: reqNo });
+    dl({ event: 'generate_lead', lead_source: CONFIG.source, form_name: 'combo_trial' });
     try {
       fetch(CONFIG.capiApi, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true, credentials: 'omit',
-        body: JSON.stringify({ eventName: 'Lead', eventId: eventId, customData: { content_name: 'combo_checkout', currency: 'INR', value: Math.round(t.total) }, userData: { phone: '+91' + phone }, eventSourceUrl: location.href })
+        body: JSON.stringify({ eventName: 'Lead', eventId: reqNo, customData: { content_name: 'combo_trial' }, userData: { phone: '+91' + phone }, eventSourceUrl: location.href })
       }).catch(function () {});
     } catch (x) {}
 
-    // Save the lead first (fire-and-forget) so the team can follow up even if payment is abandoned
+    ss('ib_order', JSON.stringify({ kind: 'trial', orderNo: reqNo, items: items, name: name, phone: phone, addons: addons }));
+    var done = false;
+    function go() { if (done) return; done = true; location.href = '/thank-you/?order=' + encodeURIComponent(reqNo); }
     function post(body) {
       return fetch(CONFIG.leadsApi, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true, credentials: 'omit' });
     }
+    setTimeout(go, 4000); // slow network: carry on, the keepalive request keeps running
     post(full).then(function (r) {
       if (r.ok) return r.json().then(function (j) { return !(j && j.success === false); }, function () { return true; });
       return false;
-    }).then(function (ok) { if (!ok) return post(minimal); }).catch(function () {});
-
-    function reset(label) { sending = false; btn.removeAttribute('aria-busy'); $('.lbl', btn).textContent = label || 'Payment karo'; }
-    function showErr(msg) {
+    }).then(function (ok) {
+      if (ok) return setTimeout(go, 300);
+      return post(minimal).then(go, go);
+    }).catch(function () {
+      if (done) return;
+      sending = false; btn.removeAttribute('aria-busy'); $('.lbl', btn).textContent = '7 din FREE trial shuru karo';
       err.textContent = '';
-      err.appendChild(d.createTextNode(msg + ' '));
+      err.appendChild(d.createTextNode('Connection nahi ho paya. Dobara try karo, ya '));
       var a = d.createElement('a');
-      a.href = 'https://wa.me/' + CONFIG.waNumber + '?text=' + encodeURIComponent('Hi, mujhe Instant Broadcast combo lena hai. Naam: ' + name + '. Items: Portal' + addons.map(function (id) { return ' + ' + CONFIG.items[id].name; }).join('') + ' [combo-lp]');
-      a.textContent = 'WhatsApp pe order karo';
+      a.href = 'https://wa.me/' + CONFIG.waNumber + '?text=' + encodeURIComponent('Hi, mujhe Instant Broadcast ka 7 din FREE trial chahiye. Naam: ' + name + '. Try karna hai: ' + names().join(' + ') + ' [combo-lp]');
+      a.textContent = 'WhatsApp pe trial maango';
       err.appendChild(a); err.appendChild(d.createTextNode('.'));
       err.hidden = false;
-    }
-
-    // 1. Create the Razorpay order on our Worker (amount is decided on the server)
-    Promise.all([
-      loadRazorpay(),
-      fetch(CONFIG.orderApi, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
-        body: JSON.stringify({ name: name, phone: phone, business: biz, addons: addons, utm_campaign: u.utm_campaign || '', utm_content: u.utm_content || '' })
-      }).then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
-    ]).then(function (res) {
-      var o = res[1];
-      if (!o || !o.ok || !window.Razorpay) { reset(); showErr('Payment abhi shuru nahi ho paya. Thodi der mein dobara try karo, ya'); return; }
-      ss('ib_pending_order', JSON.stringify({ orderNo: o.orderNo, amount: o.amount / 100, items: o.items, name: name, phone: phone }));
-      fb('track', 'AddPaymentInfo', { currency: 'INR', value: o.amount / 100 });
-      dl({ event: 'add_payment_info', currency: 'INR', value: o.amount / 100, order_no: o.orderNo });
-
-      // 2. Razorpay Checkout
-      var rzp = new window.Razorpay({
-        key: o.key,
-        order_id: o.orderId,
-        amount: o.amount,
-        currency: o.currency,
-        name: 'Instant Broadcast',
-        description: 'Combo · Order ' + o.orderNo,
-        image: location.origin + '/assets/apple-touch-icon.png',
-        prefill: { name: name, contact: '+91' + phone },
-        notes: { order_no: o.orderNo },
-        theme: { color: '#007A5C' },
-        modal: {
-          confirm_close: true,
-          ondismiss: function () { reset(); err.textContent = 'Payment complete nahi hua. Dobara "Payment karo" dabao.'; err.hidden = false; }
-        },
-        // 3. Verify on our Worker, then go to the thank-you page
-        handler: function (resp) {
-          $('.lbl', btn).textContent = 'Payment confirm ho raha hai…';
-          fetch(CONFIG.verifyApi, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin',
-            body: JSON.stringify(resp)
-          }).then(function (r) { return r.json(); }).then(function (v) {
-            if (!v || !v.ok) throw new Error('verify');
-            ss('ib_order', JSON.stringify({ verified: true, orderNo: v.orderNo, paymentId: v.paymentId, amount: v.amount, items: v.items, name: name, phone: phone, addons: addons }));
-            location.href = '/thank-you/?order=' + encodeURIComponent(v.orderNo);
-          }).catch(function () {
-            // Paid but the check didn't come back: still show the order, the team verifies it in Razorpay
-            ss('ib_order', JSON.stringify({ verified: false, orderNo: o.orderNo, paymentId: resp.razorpay_payment_id, amount: o.amount / 100, items: o.items, name: name, phone: phone, addons: addons }));
-            location.href = '/thank-you/?order=' + encodeURIComponent(o.orderNo);
-          });
-        }
-      });
-      rzp.on('payment.failed', function (r) {
-        dl({ event: 'payment_failed', order_no: o.orderNo, reason: (r && r.error && r.error.reason) || '' });
-      });
-      rzp.open();
-      $('.lbl', btn).textContent = 'Razorpay khul raha hai…';
-    }).catch(function () { reset(); showErr('Connection nahi ho paya. Dobara try karo, ya'); });
+    });
   });
 })();

@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Order confirmed — Instant Broadcast</title>
+<title>7 din FREE trial — Instant Broadcast</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#007A5C">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=3">
+<link rel="stylesheet" href="/styles.css?v=5">
 <style>
   .ty{max-width:680px;margin:0 auto;padding:8px 16px 60px}
   .ok-ic{width:64px;height:64px;border-radius:50%;background:var(--tint-2);color:var(--green-d);display:grid;place-items:center;margin:8px auto 14px}
@@ -52,7 +52,7 @@ fbq('init', '1191549192775541');
 fbq('track', 'PageView');
 </script>
 <script src="/track.js?v=3" defer></script>
-<script src="/thankyou.js?v=3" defer></script>
+<script src="/thankyou.js?v=5" defer></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -68,18 +68,18 @@ fbq('track', 'PageView');
 
 <main class="ty" id="ty">
   <div class="ok-ic"><svg><use href="#i-check"/></svg></div>
-  <h1 id="ty-title">Payment ho gaya! Welcome to Instant Broadcast.</h1>
-  <p class="sub" id="ty-sub">Aapka order confirm hai. Order number sambhal ke rakhein — support pe yahi poocha jayega.</p>
+  <h1 id="ty-title">7 din FREE trial request mil gaya!</h1>
+  <p class="sub" id="ty-sub">Hamari team jaldi call karke trial chalu karegi. Ya abhi khud onboarding shuru kar do. Request number sambhal ke rakhein.</p>
 
   <div class="order" id="order">
     <div class="order-no">
-      <div><small>Order number</small><b id="o-no">—</b></div>
+      <div><small id="o-label">Request number</small><b id="o-no">—</b></div>
       <button class="btn btn-ghost btn-sm" type="button" id="o-copy">Copy</button>
     </div>
     <div class="order-body">
-      <div class="kv"><span>Amount paid</span><b id="o-amt">—</b></div>
-      <div class="kv"><span>Plan</span><b id="o-items">Instant Broadcast combo (yearly)</b></div>
-      <div class="kv"><span>Payment ID</span><b id="o-pay" style="font-weight:600;font-size:13px">—</b></div>
+      <div class="kv"><span id="o-amt-l">Trial</span><b id="o-amt">7 din FREE</b></div>
+      <div class="kv"><span>Try karna hai</span><b id="o-items">Instant Broadcast portal</b></div>
+      <div class="kv" id="o-pay-row" hidden><span>Payment ID</span><b id="o-pay" style="font-weight:600;font-size:13px">—</b></div>
     </div>
     <div class="pending" id="o-pending" hidden>Payment Razorpay pe ho gaya hai; hamari team order ko confirm karke aapko WhatsApp karegi.</div>
   </div>
@@ -110,7 +110,7 @@ fbq('track', 'PageView');
 
       <div class="act wa">
         <span class="ic"><svg><use href="#i-wa"/></svg></span>
-        <div><h3>WhatsApp pe baat karo</h3><p>Koi sawaal? Order number ke saath seedha message karo.</p></div>
+        <div><h3>WhatsApp pe baat karo</h3><p>Koi sawaal? Request number ke saath seedha message karo.</p></div>
         <a class="btn btn-main" id="go-wa" href="https://wa.me/919228173004?text=Hi%2C%20maine%20Instant%20Broadcast%20combo%20kharida%20hai.%20%5Bcombo-lp%5D" target="_blank" rel="noopener"><svg><use href="#i-wa"/></svg>WhatsApp karo</a>
       </div>
     </div>

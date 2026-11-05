@@ -1,5 +1,7 @@
 # Instant Broadcast — Combo landing page
 
+> **Current mode (5 Nov 2026): 7-day FREE trial, no prices on the page.** The popup collects name + WhatsApp (+ business) and which products to try (portal, AI Chatbot, AI Calling), saves the lead to `instantbroadcast.in/api/leads/special-offer` with source `combo_trial` (name tagged "| 7 din FREE trial", request number `IB-YYMMDD-XXXXX` in the description), fires Meta `Lead` (+ CAPI), and opens `/thank-you/` showing the request number, Start onboarding, Book a demo and WhatsApp. The popup also opens by itself 4 s after load, once per visit. The Razorpay notes below describe the earlier paid version; `worker.js` still has that API but the page no longer calls it.
+
 Static site (no build step) for the combo offer: Instant Broadcast portal (web + app) at ₹15,000/year + 18% GST, with AI Chatbot and AI Calling as tick-to-add add-ons, and a free WhatsApp Showroom Kit with the yearly plan.
 
 Deploy: Cloudflare Pages (or Workers static assets) from branch `main`, build command none, output directory `/`.
