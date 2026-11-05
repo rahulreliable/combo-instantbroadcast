@@ -48,6 +48,17 @@
     else { el.innerHTML = inr(it.price) + ' <small>/ saal + GST</small>'; }
   });
 
+  $$('[data-pp]').forEach(function (el) {
+    var it = CONFIG.items[el.getAttribute('data-pp')];
+    if (it.price == null) el.innerHTML = '<small>price on call</small>'; else el.textContent = inr(it.price);
+  });
+  function syncPicks() {
+    $$('#co-picks .pick[data-id]').forEach(function (p) {
+      var on = !!selected[p.getAttribute('data-id')];
+      p.classList.toggle('on', on); $('input', p).checked = on;
+    });
+  }
+
   function totals() {
     var sub = CONFIG.items.portal.price, tbc = [];
     Object.keys(selected).forEach(function (id) {
@@ -84,6 +95,8 @@
     var names = ['Portal'].concat(Object.keys(selected).map(function (id) { return id === 'ai_chatbot' ? 'AI Chatbot' : 'AI Calling'; }));
     $('#s-items').textContent = names.join(' + ') + ' + Free kit';
     $('#s-total').textContent = inr(t.total) + ' / saal' + (t.tbc.length ? ' + add-on' : '');
+    syncPicks();
+    if (typeof fillMini === 'function') fillMini();
   }
 
   function setAddon(id, on, via) {
@@ -158,15 +171,20 @@
 
   // ── checkout drawer ──
   var co = $('#co'), back = $('#co-back'), lastFocus = null;
-  function openCo(via) {
-    var t = totals();
+  function fillMini() {
     var mini = $('#co-mini');
-    var names = ['Portal'].concat(Object.keys(selected).map(function (id) { return CONFIG.items[id].name; })).concat(['Showroom Kit (free)']);
+    if (!mini) return;
+    var t = totals();
     mini.textContent = '';
     var b = d.createElement('b'); b.textContent = inr(t.total) + ' / saal';
-    mini.appendChild(d.createTextNode(names.join(' + ') + ' — '));
+    mini.appendChild(d.createTextNode('Total: '));
     mini.appendChild(b);
-    mini.appendChild(d.createTextNode(' (GST ke saath)' + (t.tbc.length ? '. ' + t.tbc.join(' aur ') + ' ka price team confirm karegi.' : '.')));
+    mini.appendChild(d.createTextNode(' (18% GST ke saath)' + (t.tbc.length ? '. ' + t.tbc.join(' aur ') + ' ka price team call pe confirm karegi.' : '.')));
+  }
+  function openCo(via) {
+    var t = totals();
+    syncPicks();
+    fillMini();
     lastFocus = d.activeElement;
     co.hidden = false;
     requestAnimationFrame(function () { co.classList.add('open'); back.classList.add('open'); });
@@ -183,6 +201,16 @@
     if (lastFocus) lastFocus.focus();
   }
   $$('[data-checkout]').forEach(function (b) { b.addEventListener('click', function () { openCo(b.getAttribute('data-checkout')); }); });
+  $$('#co-picks input').forEach(function (box) {
+    box.addEventListener('change', function () { setAddon(box.value, box.checked, 'popup_tick'); });
+  });
+  // Every "Combo banao" / "add karo" button opens the popup directly (no scrolling to the builder)
+  $$('a[href="#combo"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      openCo(a.getAttribute('data-cta') || a.getAttribute('data-add') || 'cta');
+    });
+  });
   $('#co-x').addEventListener('click', closeCo);
   back.addEventListener('click', closeCo);
   d.addEventListener('keydown', function (e) { if (e.key === 'Escape' && co.classList.contains('open')) closeCo(); });

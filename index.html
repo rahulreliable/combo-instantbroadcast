@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=3">
+<link rel="stylesheet" href="/styles.css?v=4">
 <meta property="og:title" content="Instant Broadcast Combo — WhatsApp portal + AI Chatbot + AI Calling">
 <meta property="og:description" content="₹15,000/year + GST. Web + app. Free WhatsApp Showroom Kit with the yearly plan.">
 <meta property="og:image" content="https://combo.instantbroadcast.in/assets/team-kit.webp">
@@ -23,7 +23,7 @@ fbq('track', 'PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1191549192775541&amp;ev=PageView&amp;noscript=1"></noscript>
 <script src="/track.js?v=3" defer></script>
-<script src="/app.js?v=3" defer></script>
+<script src="/app.js?v=4" defer></script>
 </head>
 <body>
 
@@ -470,8 +470,14 @@ fbq('track', 'PageView');
 <div class="co-back" id="co-back"></div>
 <div class="co" id="co" role="dialog" aria-modal="true" aria-labelledby="co-title" hidden>
   <button class="x" type="button" id="co-x" aria-label="Close">×</button>
-  <h3 id="co-title">Checkout</h3>
+  <h3 id="co-title">Apna combo banao</h3>
   <div style="color:var(--ink-2);font-size:14px">Bas 2 detail, phir Razorpay pe secure payment.</div>
+  <div class="co-picks" id="co-picks" role="group" aria-label="Combo items">
+    <div class="pick on locked"><span class="tk"><svg><use href="#i-check"/></svg></span><span class="nm">Instant Broadcast portal <small>web + app</small></span><b>₹15,000</b></div>
+    <label class="pick" data-id="ai_chatbot"><input type="checkbox" value="ai_chatbot"><span class="tk"><svg><use href="#i-check"/></svg></span><span class="nm">AI Chatbot <small>24x7 WhatsApp reply</small></span><b class="pp" data-pp="ai_chatbot"></b></label>
+    <label class="pick" data-id="ai_calling"><input type="checkbox" value="ai_calling"><span class="tk"><svg><use href="#i-check"/></svg></span><span class="nm">AI Calling agent <small>lead ko turant call</small></span><b class="pp" data-pp="ai_calling"></b></label>
+    <div class="pick on locked"><span class="tk"><svg><use href="#i-check"/></svg></span><span class="nm">WhatsApp Showroom Kit <small>yearly plan gift</small></span><b class="free">FREE</b></div>
+  </div>
   <div class="mini" id="co-mini"></div>
   <form id="co-form" novalidate>
     <div class="field"><label for="co-name">Aapka naam</label><input id="co-name" name="name" autocomplete="name" maxlength="80" required></div>
